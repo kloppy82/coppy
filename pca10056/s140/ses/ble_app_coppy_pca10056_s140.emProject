@@ -82,10 +82,13 @@
       <file file_name="../../../../../../modules/nrfx/drivers/src/prs/nrfx_prs.c" />
       <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_uart.c" />
       <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_uarte.c" />
+      <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_ppi.c" />
+      <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_saadc.c" />
+      <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_timer.c" />
+      <file file_name="../../../../../../integration/nrfx/legacy/nrf_drv_ppi.c" />
     </folder>
     <folder Name="Application">
       <file file_name="../../../main.c" />
-      <file file_name="../config/sdk_config.h" />
       <file file_name="../../../config/sdk_config.h" />
     </folder>
     <folder Name="nRF_Segger_RTT">
