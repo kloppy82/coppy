@@ -110,6 +110,10 @@
 
 #define SAMPLES_IN_BUFFER 1
 
+#define RELAY_PULSE_LENGTH 10
+
+//#define COPPY_DEV_MODE
+
 BLE_LBS_DEF(m_lbs);                                                             /**< LED Button Service instance. */
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                                         /**< Context for the Queued Write module.*/
@@ -285,15 +289,27 @@ static void light_toggle(){
   static bool light_status;
 
   if (light_status){
+#ifdef COPPY_DEV_MODE
         bsp_board_led_on(LED_OFF);
-        nrf_delay_ms(10);
+        nrf_delay_ms(RELAY_PULSE_LENGTH);
         bsp_board_led_off(LED_OFF);
+#else
+        nrf_gpio_pin_write(26,1);
+        nrf_delay_ms(RELAY_PULSE_LENGTH);
+        nrf_gpio_pin_write(26,0);
+#endif
         light_status=0;
   }
   else{
+#ifdef COPPY_DEV_MODE
         bsp_board_led_on(LED_ON);
-        nrf_delay_ms(10);
+        nrf_delay_ms(RELAY_PULSE_LENGTH);
         bsp_board_led_off(LED_ON);
+#else
+        nrf_gpio_pin_write(27,1);
+        nrf_delay_ms(RELAY_PULSE_LENGTH);
+        nrf_gpio_pin_write(27,0);
+#endif
         light_status=1;
    }
 }
@@ -405,8 +421,9 @@ static void advertising_start(void)
 
     err_code = sd_ble_gap_adv_start(m_adv_handle, APP_BLE_CONN_CFG_TAG);
     APP_ERROR_CHECK(err_code);
-
+#ifdef COPPY_DEV_MODE
     bsp_board_led_on(ADVERTISING_LED);
+#endif
 }
 
 
@@ -423,8 +440,10 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     {
         case BLE_GAP_EVT_CONNECTED:
             NRF_LOG_INFO("Connected");
+#ifdef COPPY_DEV_MODE
             bsp_board_led_on(CONNECTED_LED);
             bsp_board_led_off(ADVERTISING_LED);
+#endif
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(err_code);
@@ -433,8 +452,10 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
+#ifdef COPPY_DEV_MODE
             NRF_LOG_INFO("Disconnected");
             bsp_board_led_off(CONNECTED_LED);
+#endif
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
             //err_code = app_button_disable();
             //APP_ERROR_CHECK(err_code);
@@ -540,11 +561,14 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
                   APP_ERROR_CHECK(err_code);
               }
             }
-            break;
-        case SWITCH_BUTTON:
             if(button_action){
               light_toggle();
             }
+            break;
+        case SWITCH_BUTTON:
+ /*           if(button_action){
+              light_toggle();
+            }*/
             break;
 
         default:
@@ -697,6 +721,10 @@ void saadc_init(void)
 }
 
 
+void gpio_init(){
+  nrf_gpio_cfg_output(26);
+  nrf_gpio_cfg_output(27);
+}
 
 /**@brief Function for application main entry.
  */
@@ -706,6 +734,7 @@ int main(void)
     // Initialize.
     log_init();
     leds_init();
+    gpio_init();
     timers_init();
     buttons_init();
     power_management_init();
